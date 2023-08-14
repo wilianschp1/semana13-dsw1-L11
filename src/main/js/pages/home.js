@@ -1,106 +1,69 @@
 const React = require('react');
+const {useState, useEffect} = require('react');
+const {useParams, Link} = require('react-router-dom');
 const client = require('../client');
-const { Link } = require('react-router-dom');
 
-class PageHome extends React.Component {
-	constructor(props) {
-		super(props);
-		this.state = { instrumentos: [], musicos: [] };
-	}
-	componentDidMount() {
-		client({ method: 'GET', path: '/api/instrumentos' }).done(response => {
-			this.setState({ instrumentos: response.entity._embedded.instrumentos });
-		});
-		client({ method: 'GET', path: '/api/musicos' }).done(response => {
-			this.setState({ musicos: response.entity._embedded.musicos });
-		});
+const PageEditarInstrumento = ()=>{
 
-	}
-	render() {
-		return (
-			<>
-				<h1>Demo App!</h1>
-				<Titulo entidad="Instrumentos" emoji="🎸" />
-				<InstrumentoList instrumentos={this.state.instrumentos} />
-				<Link to="/nuevo-instrumento">Nuevo Instrumento</Link>
-				<Titulo entidad="Musicos" emoji="🎵" />
-				<MusicoList musicos={this.state.musicos} />
-				<Link to="/nuevo-musico">Nuevo Musico</Link>
-			</>
-		)
-	}
+    const {id} = useParams();
+    const [instrumento, setInstrumento] = useState({});
+
+    useEffect(()=>{
+        client({
+            method: 'GET',
+            path: '/api/instrumentos/'+id,
+            headers: {'Content-Type': 'application/json'}
+        }).done((response)=>{
+            setInstrumento(response.entity)
+        })    
+    },[])
+
+    const handleSubmit = (e)=>{
+        e.preventDefault();
+        client({
+            method: 'PATCH',
+            path: '/api/instrumentos/'+id,
+            headers: {'Content-Type': 'application/json'},
+            entity: instrumento
+        }).done(()=>window.location = "/")
+    }
+
+    return(
+        <>
+            <h1>Editar Instrumento: {id}</h1>
+
+            <form onSubmit={handleSubmit}>
+
+                <label>Nombre</label>
+                <input 
+                    type="text"
+                    name="nombre"
+                    value={instrumento.nombre}
+                    onChange={(e)=>{setInstrumento({...instrumento, nombre: e.target.value})}} />
+                <br/>
+
+                <label>Categoría</label>
+                <input 
+                    type="text"
+                    name="categoria"
+                    value={instrumento.categoria}
+                    onChange={(e)=>{setInstrumento({...instrumento, categoria: e.target.value})}} />
+                <br/>
+                
+                <label>Descripción</label>
+                <input 
+                    type="text"
+                    name="descripcion"
+                    value={instrumento.descripcion}
+                    onChange={(e)=>{setInstrumento({...instrumento, descripcion: e.target.value})}} />
+                <br/>
+                
+                <input type='submit' value={`Editar Instrumento ${id}`} />
+            </form>
+            <Link to="/">Volver</Link>
+        </>
+    )
+
 }
 
-const Titulo = (props) => {
-	return (
-		<>
-			<hr />
-			<h2>{props.emoji} - {props.entidad}</h2>
-			<span>Listado completo de {props.entidad.toLowerCase()}:</span>
-			<hr />
-		</>
-	);
-}
-
-
-class InstrumentoList extends React.Component {
-	render() {
-		const instrumentos = this.props.instrumentos.map(instrumento =>
-			<Instrumento key={instrumento._links.self.href} instrumento={instrumento} />
-		);
-		return (
-			<table border="1">
-				<tbody>
-					<tr>
-						<th>Nombre</th>
-						<th>Acciones</th>
-					</tr>
-					{instrumentos}
-				</tbody>
-			</table>
-		)
-	}
-}
-class MusicoList extends React.Component {
-	render() {
-		const musicos = this.props.musicos.map(musico =>
-			<Musico key={musico._links.self.href} musico={musico} />
-		);
-		return (
-			<table border="1">
-				<tbody>
-					<tr>
-						<th>Nombre</th>
-					</tr>
-					{musicos}
-				</tbody>
-			</table>
-		)
-	}
-}
-
-class Instrumento extends React.Component {
-	render() {
-		const id = this.props.instrumento._links.self.href.split("/").slice(-1);
-		return (
-			<tr>
-				<td>{this.props.instrumento.nombre}</td>
-				<td>
-					<Link to={`/ver-instrumento/${id}`}>Ver</Link>
-				</td>
-			</tr>
-		)
-	}
-}
-
-class Musico extends React.Component {
-	render() {
-		return (
-			<tr>
-				<td>{this.props.musico.nombre}</td>
-			</tr>
-		)
-	}
-}
-
-module.exports = PageHome;
+module.exports = PageEditarInstrumento
