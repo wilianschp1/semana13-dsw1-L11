@@ -3,18 +3,18 @@ const {useState, useEffect} = require('react');
 const {useParams, Link} = require('react-router-dom');
 const client = require('../client');
 
-const PageEditarInstrumento = ()=>{
+const PageEditarMusico = ()=>{
 
     const {id} = useParams();
-    const [instrumento, setInstrumento] = useState({});
+    const [musico, setMusico] = useState({});
 
     useEffect(()=>{
         client({
             method: 'GET',
-            path: '/api/instrumentos/'+id,
+            path: '/api/musicos/'+id,
             headers: {'Content-Type': 'application/json'}
         }).done((response)=>{
-            setInstrumento(response.entity)
+            setMusico(response.entity)
         })    
     },[])
 
@@ -22,43 +22,25 @@ const PageEditarInstrumento = ()=>{
         e.preventDefault();
         client({
             method: 'PATCH',
-            path: '/api/instrumentos/'+id,
+            path: '/api/musicos/'+id,
             headers: {'Content-Type': 'application/json'},
-            entity: instrumento
+            entity: musico
         }).done(()=>window.location = "/")
     }
 
     return(
         <>
-            <h1>Editar Instrumento: {id}</h1>
+            <h1>Editar Musico: {id}</h1>
 
             <form onSubmit={handleSubmit}>
-
                 <label>Nombre</label>
                 <input 
                     type="text"
                     name="nombre"
-                    value={instrumento.nombre}
-                    onChange={(e)=>{setInstrumento({...instrumento, nombre: e.target.value})}} />
+                    value={musico.nombre}
+                    onChange={(e)=>{setMusico({...musico, nombre: e.target.value})}} />
                 <br/>
-
-                <label>Categoría</label>
-                <input 
-                    type="text"
-                    name="categoria"
-                    value={instrumento.categoria}
-                    onChange={(e)=>{setInstrumento({...instrumento, categoria: e.target.value})}} />
-                <br/>
-                
-                <label>Descripción</label>
-                <input 
-                    type="text"
-                    name="descripcion"
-                    value={instrumento.descripcion}
-                    onChange={(e)=>{setInstrumento({...instrumento, descripcion: e.target.value})}} />
-                <br/>
-                
-                <input type='submit' value={`Editar Instrumento ${id}`} />
+                <input type='submit' value={`Editar Musico ${id}`} />
             </form>
             <Link to="/">Volver</Link>
         </>
@@ -66,4 +48,4 @@ const PageEditarInstrumento = ()=>{
 
 }
 
-module.exports = PageEditarInstrumento
+module.exports = PageEditarMusico
